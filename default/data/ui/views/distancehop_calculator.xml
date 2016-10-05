@@ -1,0 +1,36 @@
+<form>
+  <label>Hop Calculator</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+  <panel>
+      <table>
+        <title>Number of Hops for each Conversation</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$"| eval hop=if(ttl&lt;32, 32-ttl, if(ttl=32, 32-ttl, if(ttl&lt;64, 64-ttl, if(ttl=64, 64-ttl, if(ttl&lt;128, 128-ttl, if(ttl=128, 128-ttl, if(ttl&lt;256, 255-ttl,0))))))) | eval conn=src_ip+"->"+dst_ip | dedup conn |table conn ttl hop| rename conn as "Conversation"| rename ttl as TTL | rename hop as "Hops"</searchString>
+         <earliestTime>-600d</earliestTime>
+      	<latestTime>now</latestTime>
+       <option name="wrap">true</option>
+      <option name="rowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">cell</option>
+      <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+</form>

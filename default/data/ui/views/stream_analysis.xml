@@ -1,0 +1,127 @@
+<form>
+  <label>Stream-Data-Analysis</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <label>Select a time:</label>
+      <default>Last 60 minutes</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port2" searchWhenChanged="false">
+      <label>Enter the Server Port:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port1" searchWhenChanged="false">
+      <label>Enter the Client Port:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+     <panel>
+      <chart>
+        <title>Amount of Connections</title>
+        <searchString>index=main sourcetype=stream:*  |timechart span=$Span$ dc(connection) as "Connections"</searchString>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+     </panel>
+  	<panel>
+      <chart>
+        <title>Bandwith over time</title>
+        <searchString>index=main sourcetype=stream:* "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" |eval bitsin=bytes_in*8|eval bitsout=bytes_out*8|eval totbits=bitsin+bitsout| eval mbits=totbits/1024/1024|timechart span=$Span$ avg(mbits) as "Average Bandwith (Mbits)" </searchString>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+   <row>
+     <panel>
+      <chart>
+        <title>Top Domains</title>
+        <searchString>sourcetype=stream:tcp ssl_subject_common_name!=NULL  | top ssl_subject_common_name</searchString>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+  <panel>
+      <chart>
+        <title>Top Sender (Packets)</title>
+        <searchString>index=main sourcetype=stream:* | top src_ip</searchString>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+     <panel>
+      <chart>
+        <title>Top Receiver (Packets)</title>
+        <searchString>index=main sourcetype=stream:* | top dest_ip</searchString>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+     <panel>
+      <chart>
+        <title>Incoming / Outgoing Packets</title>
+        <searchString>index=main sourcetype=stream:* "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$"  |timechart span=$Span$ sum(packets_in) as "In Packets" sum(packets_out) as "Out Packets"</searchString>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+     </panel>
+     <panel>
+      <chart>
+        <title>Incoming / Outgoing Bytes</title>
+        <searchString>index=main sourcetype=stream:* "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$"  |timechart span=$Span$ sum(bytes_in) as "In Bytes" sum(bytes_out) as "Out Bytes"</searchString>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+     </panel>
+  </row>
+   <row>
+     <panel>
+      <chart>
+        <title>Bytes transferred by Conversation (Src->Dest)</title>
+        <searchString>index=main sourcetype=stream:* "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$"  | eval conversation=src_ip+"->"+dest_ip |timechart span=$Span$ sum(bytes_out) as "Sum Bytes" by conversation</searchString>
+        <option name="charting.chart">area</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+     </panel>
+  	<panel>
+      <chart>
+        <title>Bytes transferred by Protocol</title>
+        <searchString>index=main sourcetype=stream:* "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" |eval totb=bytes_in+bytes_out| timechart span=$Span$ sum(totb) as "Tot Bytes" by app</searchString>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+</form>

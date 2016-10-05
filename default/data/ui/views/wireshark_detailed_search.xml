@@ -1,0 +1,170 @@
+<form>
+  <label>PCAP Detailed Search</label>
+  <fieldset autoRun="false" submitButton="true">
+     <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port2" searchWhenChanged="false">
+      <label>Enter the Server Port:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port1" searchWhenChanged="false">
+      <label>Enter the Client Port:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>Number of Packets captured</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" | stats count</searchString>
+        <option name="unit">Total Packets</option>
+      </single>
+         </panel>
+  	<panel>
+      <single>
+        <title>Number of Retransmissions</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" info=*retran* | stats count</searchString>
+        <option name="unit">Total Packets</option>
+      </single>
+       </panel>
+	<panel>
+      <single>
+        <title>% Packet Loss</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*"| stats count as total, count(eval(searchmatch("*TCP*retran*"))) as packetslost| eval percent_difference=((packetslost/total)*100) | table percent_difference</searchString>
+        <option name="unit">% Packet Loss</option>
+        <option name="numberPrecision">0.00</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+     <panel>
+      <chart>
+        <title>Bytes transferred by Conversation</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$"   | eval conversation=src_ip+"->"+dst_ip |timechart span=$Span$ sum(tcp_length) as "Sum TCP Length" by conversation</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">area</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+                </panel>
+  	<panel>
+      <chart>
+        <title>Bytes transferred by Protocol</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" | timechart span=$Span$ sum(tcp_length) as "Sum TCP Length" by protocol</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">area</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>TCP flags over time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" | rex "^[^\[\n]*\[(?P&lt;flags&gt;[^\]]+)"| search flags=*FIN* OR flags=*PSH* OR flags=*SYN* OR flags=*ACK* OR flags=*RST* NOT flags=*DUP* NOT flags=*keep* NOT flags=*packet* NOT flags=*segment*| timechart span=$Span$ count by flags usenull=f</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+               </panel>
+  	<panel>
+      <chart>
+        <title>Packets count by Protocol</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" | timechart span=$Span$ count by protocol usenull=f</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+  <panel>
+      <chart>
+        <title>TCP errors over time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" (info=*retran* OR info=*zero* OR info=*Port*re*used* OR info=*window* OR info=*update*) NOT info=*continuation* NOT info="*#*" | rex "^[^\[\n]*\[(?P&lt;tcp_error&gt;[^\]]+)" | timechart span=$Span$ count by tcp_error usenull=f</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+     </row>
+  <row>
+      <panel>
+      <input type="dropdown" token="rtt" searchWhenChanged="true">
+        <choice value="by conversation usenull=f">by conversation</choice>
+        <choice value="">overall</choice>
+        <default>overall</default>
+      </input>
+      <chart>
+        <title>Max Round Trip Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" rtt=* | eval conversation=src_ip+"->"+dst_ip|timechart span=$Span$ max(rtt) as "Max RTT" $rtt$</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+   <row>
+    <panel>
+      <input type="dropdown" token="action" searchWhenChanged="true">
+        <choice value="min">minimum</choice>
+        <choice value="max">maximum</choice>
+        <default>maximum</default>
+      </input>
+      <chart>
+        <title>Windows Size by IP</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" | timechart span=$Span$ $action$(win_size) as "WinSize" by src_ip</searchString>
+          <earliest>0</earliest>
+          <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+</panel>
+</row>
+</form>

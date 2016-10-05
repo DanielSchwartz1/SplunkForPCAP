@@ -1,0 +1,6 @@
+<dashboard>
+    <label>Overview</label>
+    <row>
+    <html src="overview.html" />
+    </row>
+</dashboard>

@@ -1,0 +1,32 @@
+<form>
+  <label>Microburst</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1s</default>
+    </input>
+  </fieldset>
+  <row>
+  <panel>
+       <chart>
+        <title>Microburst over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" tcp_length=* | eval bits=tcp_length*8| timechart span=$Span$ sum(bits) as "Bits"</searchString>
+        <earliestTime>-600d</earliestTime>
+        <latestTime>now</latestTime>
+         <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+    </chart>
+    </panel>
+  </row>
+</form>

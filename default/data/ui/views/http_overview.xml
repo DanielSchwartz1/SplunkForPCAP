@@ -1,0 +1,47 @@
+<form>
+  <label>HTTP Overview</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>HTTP Request Types over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" protocol=HTTP  NOT info="HTTP*" NOT http_request=Continuation | timechart span=$Span$ count by info usenull=f</searchString>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>HTTP Status over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" protocol=HTTP info="HTTP*"| rex field=info "HTTP\/\d\.\d\s(?&lt;status&gt;\d{3})\s"| timechart span=$Span$ count by status usenull=f</searchString>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+</form>

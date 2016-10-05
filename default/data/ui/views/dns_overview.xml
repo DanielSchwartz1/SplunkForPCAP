@@ -1,0 +1,35 @@
+<form>
+  <label>DNS Overview</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="hostname" searchWhenChanged="false">
+      <label>Enter the Hostname (FQDN):</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="ip" searchWhenChanged="false">
+      <label>Enter the IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index=* source=*$Source$* protocol=DNS Standard query NOT response|rex field=info "Standard\squery\s(?&lt;dns_id&gt;.*)\s\s(?&lt;dns_class&gt;.*)\s(?&lt;query&gt;.*)" | search query=$hostname$ |table dns_id query | JOIN dns_id [search index=* source=*$Source$* protocol=DNS Standard query response|rex field=info "Standard\squery\sresponse\s(?&lt;dns_id&gt;.*)\s\s(?&lt;dns_class&gt;.*)\s(?&lt;result&gt;.*)"| search result=$ip$|table dns_id result]| table dns_id query result | rename dns_id as "DNS Transaction ID" | rename query as "DNS Query" | rename result as "DNS Response"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="wrap">undefined</option>
+        <option name="rowNumbers">undefined</option>
+        <option name="drilldown">row</option>
+      </table>
+    </panel>
+  </row>
+</form>

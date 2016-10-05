@@ -1,0 +1,70 @@
+<form>
+  <label>NFS Overview</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv| rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+  <panel>
+       <chart>
+        <title>NFS Operation over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" protocol=NFS | rex "^\w+\s+\d+\,\s+\d+\s+\d+:\d+:\d+\.\d+\s+\w+\.\s+\w+\s+\w+\s+\w+\t\d+\.\d+\.\d+\.\d+\t\d+\.\d+\.\d+\.\d+\t\w+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t(?P&lt;nfs_op&gt;\w+\s+\w+\s+\w+)" | timechart span=$Span$ count by nfs_op usenull=f</searchString>
+        <earliestTime>-600d</earliestTime>
+        <latestTime>now</latestTime>
+         <option name="charting.chart">column</option>
+         <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+    </chart>
+    </panel>
+    <panel>
+       <chart>
+        <title>NFS Sum Bytes over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" protocol=NFS | timechart span=$Span$ sum(tcp_length) as "SumBytes"</searchString>
+        <earliestTime>-600d</earliestTime>
+        <latestTime>now</latestTime>
+         <option name="charting.chart">area</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+    </chart>
+    </panel>
+  </row>
+    <row>
+    <panel>
+       <chart>
+        <title>NFS Errors over Time</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "$IP1$" AND "$IP2$" protocol=NFS error | rex "^\w+\s+\d+\,\s+\d+\s+\d+:\d+:\d+\.\d+\s+\w+\.\s+\w+\s+\w+\s+\w+\t\d+\.\d+\.\d+\.\d+\t\d+\.\d+\.\d+\.\d+\t\w+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t\d+\t(?P&lt;nfs_op&gt;\w+\s+\w+\s+\w+)"  | rex "^(?:[^:\n]*:){3}\s+(?P&lt;nfs_error&gt;.+)"|timechart span=$Span$ count by nfs_error usenull=f</searchString>
+        <earliestTime>-600d</earliestTime>
+        <latestTime>now</latestTime>
+         <option name="charting.chart">column</option>
+         <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+    </chart>
+    </panel>
+  </row>
+</form>

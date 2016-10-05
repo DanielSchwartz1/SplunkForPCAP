@@ -1,0 +1,48 @@
+<form>
+  <label>Keep-Alive Communication</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+ </fieldset>
+ <row>
+    <panel>
+      <single>
+        <title>Number of Keep Alive's Sent</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "[TCP Keep-Alive]" | stats count</searchString>
+        <option name="unit">Keep-Alive(s)</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Number of Keep Alive's Acknowledged</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "[TCP Keep-Alive ACK]" | stats count</searchString>
+        <option name="unit">Keep-Alive ACK(s)</option>
+      </single>
+    </panel>
+  </row>
+<row>
+<panel>
+      <chart>
+        <title>Timechart Keep Alive Packets</title>
+        <searchString>index=* sourcetype=pcap:csv source="*$Source$*" "TCP Keep-Alive"  | rex "^[^\[\n]*\[(?P&lt;keep&gt;[^\]]+)" | timechart span=$Span$ count by keep</searchString>
+        <earliestTime>-600d</earliestTime>
+        <latestTime>now</latestTime>
+        <option name="charting.chart">column</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+</row>
+</form>

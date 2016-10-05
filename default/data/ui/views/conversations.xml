@@ -1,0 +1,37 @@
+<form script="autodiscover.js">
+  <label>Conversations</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="dropdown" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump file:</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+      </populatingSearch>
+    </input>
+    <input type="dropdown" token="chart" searchWhenChanged="false">
+      <label>Select Statistic:</label>
+      <default>Conversations by Packets</default>
+      <choice value="stats count by src_ip dst_ip">Conversations by Packets</choice>
+      <choice value="stats sum(tcp_length) count by src_ip dst_ip">Conversations by SumBytes</choice>
+      <choice value="stats count by src_ip dst_port">Conversations by SourceIP->DestinationPort</choice>
+      <change>
+        <set token="title">$label$</set>
+        </change>
+    </input>
+  </fieldset>
+  <search id="sankey_search">
+    <query>
+      <![CDATA[index=* sourcetype=pcap:csv source="*$Source$*"  | $chart$]]>
+    </query>
+  </search>
+  <row>
+    <panel>
+      <title>$title$</title>
+      <html>
+                <div id="sankey" class="splunk-view" data-require="app/SplunkForPCAP/components/sankey/sankey" data-options="{                             &quot;managerid&quot;: &quot;sankey_search&quot;,                             &quot;height&quot;: 700                          }">
+                </div>
+            </html>
+    </panel>
+  </row>
+</form>
