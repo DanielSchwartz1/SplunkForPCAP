@@ -6,7 +6,7 @@
       <default>*</default>
       <choice value="*">All</choice>
       <populatingSearch fieldForValue="source" fieldForLabel="source" earliest="-500d" latest="now">
-        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "(windows|unix)(\\\\|\\\)(?<source>.*)" |stats count by source]]>
+        <![CDATA[index=* sourcetype=pcap:csv | rex field=source "pcap(\\\\|\/)PCAPcsv(\\\\|\/)(?<source>.*)"  |stats count by source]]>
       </populatingSearch>
     </input>
     <input type="text" token="Span" searchWhenChanged="false">

@@ -1,108 +1,27 @@
-[app/ui]
-version = 6.2.3
-modtime = 1431762105.915178700
-
-[app/launcher]
-version = 6.2.3
-modtime = 1431762105.927181800
-
-[views/wireshark_detailed_search]
-owner = admin
-version = 6.4.2
-modtime = 1474291725.365292900
-
-[inputs/monitor%3A%2F%2FC%3A%5CTemp%5CSplunk4pcap]
-owner = admin
-version = 6.2.3
-modtime = 1431883884.942739300
-
-[views/keepalive_communication]
-owner = admin
-version = 6.3.1
-modtime = 1457546554.146764900
-
-[savedsearches/Keep-Alive%20Packets]
-access = read : [ * ]
-export = none
-owner = admin
-version = 6.2.3
-modtime = 1431941833.799379300
-
-[savedsearches/Max%20WindowSize%20Over%20Time]
-access = read : [ * ]
-export = none
-owner = admin
-version = 6.2.3
-modtime = 1431941840.510638000
-
-[views/distancehop_calculator]
-owner = admin
-version = 6.4.2
-modtime = 1474110624.422487600
-
-[views/nfs_communication]
-access = read : [ * ]
-export = none
-owner = admin
-version = 6.3.1
-modtime = 1457546502.748825100
-
-[nav/default]
-version = 6.4.2
-modtime = 1474288627.299093600
-
-[views/top_talker]
-owner = admin
-version = 6.4.2
-modtime = 1474305420.912876600
-
-[views/http_communication]
-access = read : [ * ], write : [ admin, power ]
-export = none
-owner = admin
-version = 6.4.2
-modtime = 1474288783.356019600
-
-[views/microburst]
-owner = admin
-version = 6.4.2
-modtime = 1474288585.022675500
-
-[views/stream_analysis]
-owner = admin
-version = 6.2.3
-modtime = 1436824569.524305900
-
-[app/install/install_source_checksum]
-version = 6.4.2
-modtime = 1473948267.595043700
-
-[views/overview]
-export = none
-owner = admin
-version = 6.3.1
-modtime = 1457547689.303692200
-
-[app/install/is_configured]
-version = 6.4.2
-modtime = 1473948268.084071700
-
 [views/conversations]
-owner = admin
-version = 6.5.0
-modtime = 1475140560.670263800
+export = none
 
 [views/dns_overview]
-owner = admin
-version = 6.4.2
-modtime = 1474288125.696403600
+export = none
+
+[views/distancehop_calculator]
+export = none
 
 [views/http_overview]
-owner = admin
-version = 6.4.2
-modtime = 1474291427.504256200
+export = none
+
+[views/keepalive_communication]
+export = none
+
+[views/microburst]
+export = none
 
 [views/nfs_overview]
-owner = admin
-version = 6.4.2
-modtime = 1474288854.397082900
+export = none
+
+[views/wireshark_detailed_search]
+export = none
+
+[views/top_talker]
+export = none
+
