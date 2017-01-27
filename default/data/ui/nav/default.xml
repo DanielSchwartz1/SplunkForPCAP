@@ -10,6 +10,10 @@
    <collection label="Others" >
     	<view source="unclassified" />
   	</collection>
+  <collection label="Help">
+        <a href="http://devops-online.com/splunk-pcap-analyzer">FAQ</a>
+        <a href="https://github.com/DanielSchwartz1/SplunkForPCAP/issues/new">Open Issues</a>
+    </collection>
   <view name="dashboards" />
   <view name="search"  />
   <view name="reports" />

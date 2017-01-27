@@ -1,3 +1,5 @@
+<html>
+
 <h1>PCAP Analyzer for Splunk</h1>
 
 
@@ -10,48 +12,13 @@
 <p>You have some questions? Check out at first the FAQ page at: <a href="http://devops-online.com/splunk-pcap-analyzer">http://devops-online.com/splunk-pcap-analyzer</a></p>
 </br>
 </br>
-<b><p>INTRODUCTION</p></b>
-<p>The Splunk App for PCAP files will express the pcap files into helpful charts by converting the files into a Splunk readable CSV file</p>
-<p>Included with this first version of the Splunk App For PCAP is:<br>
-- Script (pcap2csv.bat and pcap2csv.sh) for Windows and Unix systems to convert the PCAP files to a CSV file <br>
-(sourcetype is defined for the output of the included script)</p>
-<br>
-<br>
-<b><p>NOTES ABOUT THE DATA</p></b>
-<p>I have suffered from timestamp problems with PCAP files over 500MB. <br>
-In case of big files I have split the pcap files into smaller files by using editcap.exe out of the Wireshark package.</p>
-<p>-Index defined for the data:<br>
---&gt;index=ws</p>
-<p>-Sourcetype defined for the data:<br>
---&gt;sourcetype=pcap:csv</p>
-<p>-Inputs are defined as follows:<br>
---&gt;Windows: [monitor://C:\Program Files\Splunk\etc\apps\SplunkForPCAP\bin\windows*.csv<em>]<br>
---&gt;Unix: [monitor:///opt/splunk/etc/apps/SplunkForPCAP/bin/unix/</em>.csv*]</p>
-<br>
-<br>
-<b><p>REQUIREMENTS</p></b>
-<ul>
-<li>Wireshark (tshark) needs to be installed (available)</li>
-</ul>
-<br>
-<br>
-<b><p>GETTING STARTED</p></b>
-<p>After the installation:<br>
-Step 1: Make sure the ../SplunkForPCAP/bin/ folder has all administrative privileges to execute the batch and shell script<br>
-Step 2: Make sure the path in the pcap2csv scripts will fit with your path configured (default: C:/Program Files/Splunk or /opt/splunk)<br>
-Step 3: Make sure the Splunk Home path fits to the inputs.conf file in /default folder.<br>
-Step 4: In case of a configuration change (inputs.conf), you have to restart splunk.</p>
-<p>How to convert PCAP to CSV:</p>
-<ol>
-<li>Put your PCAP files into the ../SplunkForPCAP/bin/ and execute the pcap2csv script<br>
---&gt; Automatically a CSV file with the filename will be created (test.pcap --&gt; test.csv)</li>
-<li>Splunk is reading the data from the /bin folder as defined in the inputs.conf.<br>
---&gt; index=ws sourcetype=pcap:csv</li>
-</ol>
-<br>
-<br>
-<b><p>ROADMAP</p></b>
-<ul>
-<li>Support for more protocols and more use cases</li>
-<li>Dashboards will change to highlight the most important use cases for troubleshooting.</li>
-</ul>
+<h1>Planned Activties:</h1>
+<h2>1. PCAP Add-On for Real Time Network Capturing</h2>
+<p>That Add-On is supporting real time network capturing</p>
+</br>
+<h2>1. PCAP Add-on for Universal Forwarder</h2>
+<p>That Add-On can be used for forwarding PCAP data from an Universal Forwarder to your Indexer</p>
+</br>
+<p>Coming soon...</p>
+
+</html>

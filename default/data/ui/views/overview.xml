@@ -1,6 +1,77 @@
-<dashboard>
-    <label>Overview</label>
+<dashboard script="autodiscover.js">
+<label>Overview</label>
     <row>
+    	<panel>
+			<html>
+				<div class = "splunk-view" data-require = "app/SplunkForPCAP/components/scc_takethetour/scc_takethetour"
+					data-options = '{
+						"user_slides":"scc-takethetour-slides",
+						"width":"60",
+						"title":"How to work with Splunk PCAP Analyzer?",
+						"close_btn_label":"Close",
+						"no_more_label":"Do not show this again",
+						"cookie_name_suffix":"splunkforpcap",
+						"hide_container":false,
+						"show_credits":true
+					}'>
+				</div>
+				<ul id="scc-takethetour-slides" class="hide">
+					<li>
+						<h3>Getting started - Requirements!</h3>
+						Step 1: Make sure the ../SplunkForPCAP/bin/ folder has all administrative privileges to execute the batch and shell script<br />
+						Step 2: Make sure you have tshark installed (delivered with Wireshark)<br />
+						Step 3: Make sure you have set SPLUNK_HOME variable<br />
+                        <br /><br />
+                        <b>Click on the next slide and check how to configure the PCAP File Location!</b>
+                        <br /><br />
+					</li>
+					<li>
+						<h3>Getting started - PCAP File Location!</h3>
+						To allow Splunk to collect your PCAP Files you have to specify where you have stored your pcap files.<br />
+						You can specify your location in the Data Inputs (via Settings) --> PCAP File Location.<br />
+						<div style="text-align: left;">
+                            <img src="../../static/app/SplunkForPCAP/take_the_tour/datainputs.png" alt="datainputs.png"/>
+                        </div>
+                        <div style="text-align: left;">
+                            <img src="../../static/app/SplunkForPCAP/take_the_tour/datainputs2.png" alt="datainputs2.png"/>
+                        </div>
+                        <br /><br />
+                        <b>Click on the next slide to understand what happens with your pcap files after they are indexed!</b>
+                        <br /><br />
+					</li>
+					<li>
+						<h3>Getting started - Notes about the data!</h3>
+						1. Sourcetype defined for indexing that data is "pcap:csv"<br />
+						2. You will recognize that after you can see your pcap file indexed in Splunk it is removed from your folder. The new location of the PCAP File is: $SPLUNK_HOME\var\log\pcap\PCAPConverted. That is happening to avoid that the automatic script converts your pcap file twice.<br />
+                        <br /><br />
+					</li>
+					<li>
+						<h3>Analysis</h3>
+						The App includes Dashboards which will show you:<br />
+						- The Top Talker IP's, Protocols, VLANs, Conversations<br />
+						- Detailed overview about IP Conversations, Packet Loss, TCP Error's, Round Trip Time<br />
+						- Conversation Sankey Diagram (by Packets, by Bytes, by Destination Port) <br />
+						- Microburst Dashboard (Bit timechart)<br />
+						- DNS / NFS / HTTP / Keep Alive Communication Dashboards<br />
+						- Hop Calculator between two IP's<br />
+                        <br /><br />
+					</li>
+					<li>
+						<h3>Thanks for downloading PCAP Analyzer for Splunk!</h3>
+						<b>I hope the application can help you to analyze your problem in a better way and maybe even give you the right hint to the solution!</b>
+						<br />
+						<br />
+						<b>ROADMAP</b><br />
+						Support for more protocols and more use cases<br />
+						Dashboards will change to highlight the most important use cases for troubleshooting.<br />
+                        <br /><br />
+					</li>
+
+                </ul>
+			</html>
+		</panel>
+	</row>
+	<row>
     <html src="overview.html" />
     </row>
 </dashboard>
