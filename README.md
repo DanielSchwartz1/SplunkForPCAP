@@ -20,4 +20,5 @@ ROADMAP
 - Dashboards will change to highlight the most important use cases for troubleshooting.  
 
 FAQ 
-http://devops-online.com/splunk-pcap-analyzer
+https://devops-online.com/pcap-analyzer/
+https://devops-online.com/pcap-analyzer-for-splunk-getting-started/
