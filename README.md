@@ -3,7 +3,7 @@
 <br>
 Check out: https://splunkbase.splunk.com/app/2748/
 <br>
-Current version: 4.0 (Automatic script execution and user defined ".pcap" file location)
+Current version: 4.1.8 (Automatic script execution and user defined ".pcap" file location)
 <br>
 ------------------------------------------------
 <br>
