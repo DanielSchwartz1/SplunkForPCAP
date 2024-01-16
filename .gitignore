@@ -1,3 +1,4 @@
+.gitignore
 local
 bin/lib/*
 bin/splunklib/*
