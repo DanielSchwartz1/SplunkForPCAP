@@ -5,7 +5,9 @@ Check out: https://splunkbase.splunk.com/app/2748/
 <br>
 ------------------------------------------------
 <br>
-The PCAP Analyzer for Splunk includes useful Dashboards to analyze network packet capture files from Wireshark or Network Monitor (.pcap).  The App includes Dashboards which will show you: 
+The PCAP Analyzer for Splunk includes useful Dashboards to analyze network packet capture files from Wireshark or Network Monitor (.pcap | .pcapng).  
+
+The App includes Dashboards which will show you: 
 - The Top Talker IP's, Protocols, VLANs, Conversations 
 - Detailed overview about IP Conversations, Packet Loss, TCP Error's, Round Trip Time 
 - Conversation Sankey Diagram (by Packets, by Bytes, by Destination Port)  
