@@ -1,0 +1,302 @@
+<form version="1.1">
+  <label>PCAP Detailed Search</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port2" searchWhenChanged="false">
+      <label>Enter the Server Port:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port1" searchWhenChanged="false">
+      <label>Enter the Client Port:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>Number of Packets captured</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | stats count</query>
+        </search>
+        <option name="unit">Total Packets</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Number of Retransmissions</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ retransmission=yes $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | stats count</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="unit">Total Packets</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>% Packet Loss</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$| stats count as total, count(eval(searchmatch("retransmission=yes"))) as packetslost| eval percent_difference=((packetslost/total)*100) | table percent_difference</query>
+        </search>
+        <option name="unit">% Packet Loss</option>
+        <option name="numberPrecision">0.00</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>#successful 3-Way Handshakes</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ protocol=TCP| lookup tcp_flags id AS tcp_flags OUTPUT flag
+| transaction tcp_stream startswith="tcp_syn_flag=1" 
+| where like(flag, "syn/ack%") AND like(flag, "%ack%")
+| stats count</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>#NOT successful 3-Way Handshakes</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | lookup tcp_flags id AS tcp_flags OUTPUT flag
+| transaction tcp_stream
+| search tcp_syn_flag=1 AND retransmission=yes linecount&lt;10| stats count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Conversation Overview</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ |  eval searchErrors=case(searchmatch("retransmission=yes"), "Retransmissions",searchmatch("zero_window=yes"), "Zero Window", searchmatch("window_full=yes"), "Window Full") | stats earliest(_time) as "start" latest(_time) as "end" count as "#packets" count(searchErrors) as "#errors" by tcp_stream, source_ip, destination_ip |eval stream_duration=end-start
+|  sort - "#packets" | fields - start end</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Bytes transferred by Conversation</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$   | eval conversation=source_ip+"-&gt;"+destination_ip |timechart span=$Span$ sum(length) as "Sum Length" by conversation</query>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Bytes transferred by Protocol</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | timechart span=$Span$ sum(length) as "Sum Length" by highest_layer</query>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>TCP flags over time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ |  lookup tcp_flags id AS tcp_flags OUTPUT flag
+| timechart span=$Span$ count by flag usenull=f</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Packets count by Protocol</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | timechart span=$Span$ count by highest_layer usenull=f</query>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>TCP errors over time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ (duplicate_ack=yes OR retransmission=yes OR zero_window=yes OR reused_port=yes OR window_full=yes) | rex "(?&lt;tcp_error&gt;(duplicate_ack|retransmission|zero_window|reused_port|window_full))\=yes"  | timechart span=$Span$ count by tcp_error usenull=f</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Statistic - TCP errors</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ (duplicate_ack=yes OR retransmission=yes OR zero_window=yes OR reused_port=yes OR window_full=yes) | rex "(?&lt;tcp_error&gt;(duplicate_ack|retransmission|zero_window|reused_port|window_full))\=yes"  | stats count by tcp_error | sort - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>TCP errors over time by SourceIP</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ (duplicate_ack=yes OR retransmission=yes OR zero_window=yes OR reused_port=yes OR window_full=yes) | rex "(?&lt;tcp_error&gt;(duplicate_ack|retransmission|zero_window|reused_port|window_full))\=yes"   | timechart span=$Span$ count by source_ip</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Retransmissions by Conversation</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ retransmission=yes| eval conversation=source_ip+" -&gt; "+destination_ip | stats count by conversation | sort -count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="dropdown" token="rtt" searchWhenChanged="true">
+        <choice value="by conversation usenull=f">by conversation</choice>
+        <choice value="">overall</choice>
+        <default>overall</default>
+      </input>
+      <chart>
+        <title>Max Round Trip Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ rtt=* | eval conversation=source_ip+"-&gt;"+destination_ip |timechart span=$Span$ max(rtt) as "Max RTT" $rtt$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="dropdown" token="action" searchWhenChanged="true">
+        <choice value="min">minimum</choice>
+        <choice value="max">maximum</choice>
+        <default>maximum</default>
+      </input>
+      <chart>
+        <title>Windows Size by IP</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ $IP1$ AND $IP2$ AND $Port1$ AND $Port2$ | timechart span=$Span$ $action$(tcp_window_size) as "WinSize" by source_ip</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,72 @@
+<dashboard version="1.1">
+<label>Overview</label>
+    <row>
+    	<panel>
+			<html>
+				<h1>Welcome to the new version 5.0.0 of SplunkForPCAP!</h1>
+				<h2> There are some important changes made to improve the user experience:</h2>
+
+					<ul>
+					  
+						<li>1. A new python script is taking care about the convertion of your capture file. In the old version it was a shell / batch script depending on the OS</li>
+						<li>2. The new version includes in the raw events the format of field=value - no extra parsing needed for the standard fields</li>
+						<li>3. The converted capture file was before moved away from your initial location - now a new folder "converted" will be created in the same location of your capture file</li>
+						<li>4. Starting from now also .pcapng files will be automatically converted - not only .pcap</li>
+						<li>5. The new collection includes also the UDP port details</li>
+						<li>6. The field names have changed for a better understanding</li>
+
+
+					</ul>
+				
+					<br></br>
+					
+				<h1>What has been removed in the new version (which was present in the old version)?</h1>
+				<h2>The below dashboards have been removed temporary, to improve them more in detail:</h2>
+					<ul>
+					  
+						<li>Microburst Dashboard</li>
+						<li>Keep Alive Dashboard</li>
+
+					</ul>
+					
+					<br></br>
+					
+				<h1>What are the requirements to start?</h1>
+				<h2>Please make sure that you have the following topics checked in advance:</h2>
+					<ul>
+					  
+						<li>1. Please install Tshark on your system - Tshark will be delivered directly with Wireshark</li>
+						<li>2. Make sure that you have set the $SPLUNK_HOME variable properly to the location of your Splunk installation </li>
+						<li>3. Make sure that the Splunk user can read and write into the trace file location of your choice</li>
+						
+					</ul>
+					
+					<br></br>
+					
+				<h1>What are the first steps?</h1>
+				<h2>The "Getting Started Guide" to get your first capture collected in Splunk can be found here: <strong><a href="https://schwartzdaniel.com/pcap-analyzer-for-splunk-getting-started/">Get Started</a></strong></h2>
+				
+				<ul>
+					  
+						<li>1. The very first step is to define a folder where your pcap files are located via Settings –> Data Inputs –> PCAP File Location</li>
+						<li>2. Once done, you can put your trace file in .pcap or .pcapng format into that defined folder and wait until it is being converted  </li>
+						<li>3. As soon as Splunk finished the event collection, the trace file will be moved to a folder called converted in the same defined location</li>
+						
+					</ul>
+        
+				<br></br>
+				
+				        
+        
+					
+				<h1>Do you have problems?</h1>
+					<ul>
+					  <li>1. All the outputs of the python script are written into the sourcetype=pcap:analyzer:debug. Check out the search <strong>"index=* sourcetype=pcap:analyzer:debug"</strong> to see if you can already find the root cause of the issue </li>
+						<li>2. If you still have problems to get your capture file collected in Splunk, feel free to write me an email to the following address: <strong><a href="mailto:1daniel.schwartz1@gmail.com">1daniel.schwartz1@gmail.com</a></strong></li>
+						<li>3. If you see any issues or bugs with the application, I would be happy if you could manage it via the issue section on <strong><a href="https://github.com/DanielSchwartz1/SplunkForPCAP/issues/new">Github</a></strong> </li>
+						<li>4. If you have suggestions or ideas to further improve this app, feel free to write me an email to the following address: <strong><a href="mailto:1daniel.schwartz1@gmail.com">1daniel.schwartz1@gmail.com</a></strong>. I will be happy to work on it in a free time</li>
+					</ul>	
+			</html>
+		</panel>
+	</row>
+</dashboard>

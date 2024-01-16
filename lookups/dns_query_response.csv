@@ -1,0 +1,11 @@
+response, id
+successful,0
+format error,1
+server failure,2
+name error,3
+not implemented,4
+refused,5
+name that should not exist does exist,6
+rrset that should not exist does exist,7
+server not authoritative for the zone,8
+name not in zone,9

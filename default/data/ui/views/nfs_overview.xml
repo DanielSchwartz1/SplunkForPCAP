@@ -1,0 +1,90 @@
+<form version="1.1">
+  <label>NFS Overview</label>
+  <description>RFC1813 - RFC3530</description>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>NFS Operation over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=NFS rpc_procedure=* 
+| lookup nfs_procedure id AS rpc_procedure OUTPUT rpc_procedure
+| timechart span=$Span$ count by rpc_procedure</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>NFS Sum Bytes over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=NFS | timechart span=$Span$ sum(length) as "SumBytes"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>NFS Status over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=NFS nfs_status=*
+| lookup nfs_status id AS nfs_status OUTPUT status|timechart span=$Span$ count by status usenull=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</form>

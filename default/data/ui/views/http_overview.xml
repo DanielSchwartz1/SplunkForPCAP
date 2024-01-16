@@ -1,0 +1,87 @@
+<form version="1.1">
+  <label>HTTP Overview</label>
+  <fieldset autoRun="false" submitButton="true">
+      <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>HTTP Method Types over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ HTTP  http_request_method=* | timechart span=$Span$ count by http_request_method</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="height">250</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Max HTTP Response Time by Server</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ HTTP http_time=* | timechart span=$Span$ max(http_time) as "HTTP Time" by source_ip</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>HTTP Requests over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ HTTP http_request_uri=*| timechart span=$Span$ count by http_request_uri</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>HTTP Status over Time</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ HTTP http_response_status=*| timechart span=$Span$ count by http_response_status usenull=f</query>
+        </search>
+        <earliest>0</earliest>
+        <latest></latest>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.legend.masterLegend">null</option>
+        <option name="height">250</option>
+        <option name="charting.fieldColors">{"count": 0x639BF1, "average":0xFF5A09}</option>
+      </chart>
+    </panel>
+  </row>
+</form>

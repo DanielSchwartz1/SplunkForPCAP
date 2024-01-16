@@ -1,0 +1,126 @@
+<form theme="light" version="1.1">
+  <label>Problem Detection</label>
+  <description>This Dashboard will help to get a first idea where to look at in the Wireshark trace!</description>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port2" searchWhenChanged="false">
+      <label>Enter the Server Port:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="Port1" searchWhenChanged="false">
+      <label>Enter the Client Port:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <p>This panel shows the maximum delta time by packet number (Top 10). It might be helpful if you look for delays in a communication!</p>
+      </html>
+      <chart>
+        <title>Delta time (sec) by packet number : tcp-stream</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" tcp_fin_flag=0 AND tcp_reset_flag=0 | eval p_s=packet_number+":"+tcp_stream|  timechart span=$Span$ max(time_delta) by p_s useother=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <p>This panel shows the tcp errors by tcp-stream. It is helpful to see directly which stream could be the problematic one!</p>
+      </html>
+      <table>
+        <title>Errors by tcp-stream</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" (duplicate_ack=yes OR retransmission=yes OR zero_window=yes OR reused_port=yes OR window_full=yes) | rex "(?&lt;tcp_error&gt;(duplicate_ack|retransmission|zero_window|reused_port|window_full))\=yes"  | rename tcp_stream as "tcp-stream" |contingency "tcp-stream" tcp_error usetotal=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <html>
+        <p>This panel shows the 3-way-handshakes which did not finish successful, but shows retransmissions instead.</p>
+      </html>
+      <table>
+        <title>Unsuccessful 3-way-handshakes by conversation</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" |eval Conversation=source_ip+"-&gt;"+destination_ip+":"+tcp_destination_port | lookup tcp_flags id AS tcp_flags OUTPUT flag
+| transaction tcp_stream
+| search tcp_syn_flag=1 AND retransmission=yes linecount&lt;10|stats count as "Attempts" by Conversation</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <p>This panel shows RTT outliers with some details!</p>
+      </html>
+      <table>
+        <title>RTT Outlier Details</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" |eval conversation=source_ip+"-&gt;"+destination_ip 
+ | sort 0 _time| eventstats avg(rtt) as avg stdev(rtt) as stdev | eval lowerBound=(avg-stdev*exact(2)), upperBound=(avg+stdev*exact(2)) | eval isOutlier=if('rtt' &lt; lowerBound OR 'rtt' &gt; upperBound, 1, 0) | table _time,packet_number,conversation, "rtt" isOutlier |where isOutlier=1 | fields - isOutlier</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <html>
+        <p>This panel is still a work in progress. This panel shows possible suspects where to put the focus on.</p>
+      </html>
+      <table>
+        <title>Possible suspects</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" AND "$Port1$" AND "$Port2$" tcp_fin_flag=0 AND tcp_reset_flag=0 | eval case=if(dns_time&gt;1, "DNS delay!", if(http_time&gt;3, "HTTP delay!", if(time_delta&gt;4, "Delta Time high!", if(rpc_time&gt;1, "RPC delay!", if(smb2_time&gt;1, "SMB2 delay!", if(smb_time&gt;1, "SMB delay!", "ok"))))))|search NOT case="ok" | stats values(packet_number) as "Packet Numbers" by case | rename case as "Suspect"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

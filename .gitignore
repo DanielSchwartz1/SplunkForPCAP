@@ -1,0 +1,5 @@
+local
+bin/lib/*
+bin/splunklib/*
+metadata
+PCAP_Output/*

@@ -1,0 +1,132 @@
+<form version="1.1">
+  <label>DNS Overview</label>
+  <description>RFC1034 - RFC1035</description>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="hostname" searchWhenChanged="false">
+      <label>Enter the Hostname (FQDN):</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="ip" searchWhenChanged="false">
+      <label>Enter the IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>DNS Details of successful queries</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ highest_layer=DNS dns_query_name=* 
+| lookup dns_type id AS dns_query_type OUTPUT type 
+| table dns_id type dns_query_name
+| join dns_id [search index=* $Source$ highest_layer=DNS dns_response_name=*| lookup dns_query_response id AS dns_status OUTPUT response
+    | table dns_id response]|  dedup dns_id
+    |  table dns_id type dns_query_name response
+    | rename dns_id as "DNS Transaction ID" |rename type as "DNS Record"
+|  rename dns_query_name as "DNS Query" | rename response as "DNS Response"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>DNS Queries over time</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ DNS dns_query_name=$hostname$ |  timechart count by dns_query_name</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>DNS Record over time</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ highest_layer=DNS dns_query_name=* 
+| lookup dns_type id AS dns_query_type OUTPUT type 
+| timechart count by type</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Max DNS Response Time</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ DNS dns_time=*| timechart max(dns_time) as "DNS Time" by source_ip</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>DNS Status over time</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ highest_layer=DNS dns_response_name=*
+| lookup dns_query_response id AS dns_status OUTPUT response
+| timechart count by response</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>DNS Errors by Query</title>
+        <search>
+          <query>index=* sourcetype="pcap:analyzer" $Source$ highest_layer=DNS dns_response_name=*
+| lookup dns_query_response id AS dns_status OUTPUT response
+|  search response !=successful
+| stats count by dns_response_name response
+|  sort - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

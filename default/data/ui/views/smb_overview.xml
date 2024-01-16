@@ -1,0 +1,118 @@
+<form version="1.1">
+  <label>SMB/2 Overview</label>
+  <fieldset autoRun="false" submitButton="true">
+    <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="Span" searchWhenChanged="false">
+      <label>Enter the Timechart Span:</label>
+      <default>1m</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>SMB Packets by Source (Filer / Storage)</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" protocol=SMB OR highest_layer=SMB2  | timechart span=$Span$ count by source_ip</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Packets by SMB Method</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=SMB2  | lookup smb2_command id AS smb2_cmd OUTPUT command
+|  timechart span=$Span$ count by command usenull=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="dropdown" token="action" searchWhenChanged="true">
+        <choice value="avg">average</choice>
+        <choice value="max">maximum</choice>
+        <default>average</default>
+      </input>
+      <chart>
+        <title>SMB Response Time by Source (Filer / Storage)</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=SMB2  | timechart span=$Span$ $action$(smb2_time) by source_ip</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <input type="dropdown" token="action1" searchWhenChanged="true">
+        <choice value="avg">average</choice>
+        <choice value="max">maximum</choice>
+        <default>average</default>
+      </input>
+      <chart>
+        <title>SMB Response Time by SMB Method</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=SMB2  | lookup smb2_command id AS smb2_cmd OUTPUT command
+|  timechart span=$Span$ $action1$(smb2_time) by command usenull=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Packets by SMB Status</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$" highest_layer=SMB2  | lookup smb2_status id AS smb2_nt_status OUTPUT status
+|  timechart span=$Span$ count by status usenull=f</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,45 @@
+<form version="1.1">
+  <label>Hop Calculator</label>
+  <fieldset autoRun="false" submitButton="true">
+      <input type="multiselect" token="Source" searchWhenChanged="false">
+      <label>Select tcpdump files:</label>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>index=* sourcetype=pcap:analyzer | rex field=source "SplunkForPCAP(\\\\|\/)PCAP\_Output(\\\\|\/)(?&lt;source&gt;.*)"  |stats count by source</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <valuePrefix>source="*</valuePrefix>
+      <valueSuffix>*"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>SELECT TCPDUMP</default>
+    </input>
+    <input type="text" token="IP1" searchWhenChanged="false">
+      <label>Enter the Client IP:</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="IP2" searchWhenChanged="false">
+      <label>Enter the Server IP:</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>Number of Hops for each Conversation</title>
+        <search>
+          <query>index=* sourcetype=pcap:analyzer $Source$ "$IP1$" AND "$IP2$"| eval hop=if(ttl&lt;32, 32-ttl, if(ttl=32, 32-ttl, if(ttl&lt;64, 64-ttl, if(ttl=64, 64-ttl, if(ttl&lt;128, 128-ttl, if(ttl=128, 128-ttl, if(ttl&lt;256, 255-ttl,0))))))) | eval conn=source_ip+"-&gt;"+destination_ip | dedup conn |search hop>0|table conn ttl hop| rename conn as "Conversation"| rename ttl as TTL | rename hop as "Hops" </query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
