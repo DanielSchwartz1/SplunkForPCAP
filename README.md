@@ -3,7 +3,7 @@
 <br>
 Check out: https://splunkbase.splunk.com/app/2748/
 <br>
-Make sure to visit the [wiki page](https://github.com/DanielSchwartz1/SplunkForPCAP/wiki).\
+Make sure to visit the [wiki page](https://github.com/DanielSchwartz1/SplunkForPCAP/wiki). \
 ------------------------------------------------
 <br>
 The PCAP Analyzer for Splunk includes useful Dashboards to analyze network packet capture files from Wireshark or Network Monitor (.pcap | .pcapng).  
