@@ -4,3 +4,5 @@ bin/lib/*
 bin/splunklib/*
 metadata
 PCAP_Output/*
+.DS_Store
+*/.DS_Store
