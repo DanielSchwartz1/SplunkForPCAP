@@ -24,5 +24,5 @@ ROADMAP
 - Support for more protocols and more use cases 
 - Dashboards will change to highlight the most important use cases for troubleshooting.  
 
-FAQ 
-https://schwartzdaniel.com/pcap-analyzer-for-splunk-getting-started/
+FAQ
+https://github.com/DanielSchwartz1/SplunkForPCAP/wiki 
