@@ -3,8 +3,8 @@
     <row>
     	<panel>
 			<html>
-				<h1>Welcome to the new version 5.0.0 of SplunkForPCAP!</h1>
-				<h2> There are some important changes made to improve the user experience:</h2>
+				<h1>Welcome to SplunkForPCAP!</h1>
+				<h2> There were some important changes made to improve the user experience with version 5.0.0:</h2>
 
 					<ul>
 					  
@@ -44,7 +44,7 @@
 					<br></br>
 					
 				<h1>What are the first steps?</h1>
-				<h2>The "Getting Started Guide" to get your first capture collected in Splunk can be found here: <strong><a href="https://schwartzdaniel.com/pcap-analyzer-for-splunk-getting-started/">Get Started</a></strong></h2>
+				<h2>The "Getting Started Guide" to get your first capture collected in Splunk can be found here: <strong><a href="https://github.com/DanielSchwartz1/SplunkForPCAP/wiki/Getting-Started-%E2%80%90-first-configuration">Get Started</a></strong></h2>
 				
 				<ul>
 					  

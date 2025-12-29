@@ -1,14 +1,10 @@
 # SplunkForPCAP
-
 ------------------------------------------------
-
 <br>
 Check out: https://splunkbase.splunk.com/app/2748/
 <br>
-Make sure to visit the [wiki page](https://github.com/DanielSchwartz1/SplunkForPCAP/wiki)
-
+Make sure to visit the [wiki page](https://github.com/DanielSchwartz1/SplunkForPCAP/wiki). \
 ------------------------------------------------
-
 <br>
 The PCAP Analyzer for Splunk includes useful Dashboards to analyze network packet capture files from Wireshark or Network Monitor (.pcap | .pcapng).  
 
@@ -24,5 +20,5 @@ ROADMAP
 - Support for more protocols and more use cases 
 - Dashboards will change to highlight the most important use cases for troubleshooting.  
 
-FAQ
-https://github.com/DanielSchwartz1/SplunkForPCAP/wiki 
+FAQ 
+https://github.com/DanielSchwartz1/SplunkForPCAP/wiki/Getting-Started-%E2%80%90-first-configuration

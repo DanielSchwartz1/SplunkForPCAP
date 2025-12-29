@@ -8,7 +8,7 @@ For issues please contact me via email or open a new issue on Github:
 https://github.com/DanielSchwartz1/SplunkForPCAP/issues/new
 
 Emails will be usually answered between Monday-Friday 9am - 6pm European Time.
-Getting started: https://schwartzdaniel.com/pcap-analyzer-for-splunk-getting-started/
+Getting started: https://github.com/DanielSchwartz1/SplunkForPCAP/wiki/Getting-Started-%E2%80%90-first-configuration
 
 => INTRODUCTION
 

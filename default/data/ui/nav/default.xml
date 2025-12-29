@@ -11,7 +11,7 @@
     	<view name="distancehop_calculator" />
   </collection>
   <collection label="Help">
-        <a href="https://schwartzdaniel.com/pcap-analyzer-for-splunk-getting-started/">Get Started</a>
+        <a href="https://github.com/DanielSchwartz1/SplunkForPCAP/wiki/Getting-Started-%E2%80%90-first-configuration">Get Started</a>
         <a href="https://github.com/DanielSchwartz1/SplunkForPCAP/issues/new">Open Issues</a>
     </collection>
   <view name="dashboards" />
